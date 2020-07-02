@@ -12,16 +12,17 @@ def divnorm(stim, choices, input_param_names, input_params, dt=1/20, nunits=2):
     # initialize parameters
     ntrials, ntimesteps = stim.shape
     W = params['omega']*np.ones((nunits,nunits)) # initialize inhibition weight
-    R = G = np.empty((nunits,ntrials,ntimesteps+1)) # initialize excitatory R and inhibitory G units
-    R[:] = G[:] = np.nan
-    R[:,:,0] = G[:,:,0] = 0
+    R = np.empty((nunits,ntrials,ntimesteps+1)) # initialize excitatory R and inhibitory G units
+    G = np.empty((nunits,ntrials,ntimesteps+1))
+    R[:,:,0] = 0
+    G[:,:,0] = 0
     C = np.zeros((nunits,ntrials,ntimesteps)) # reshape stim
     for i in range(nunits):
         C[i,:,:] = stim == np.unique(stim)[i]
     C.astype(int)
     
     # computational implementation of model
-    for t in range(2):
+    for t in range(ntimesteps):
         R[0,:,t+1] = R[0,:,t] + dt/params['tauR'] * ( - R[0,:,t] + C[0,:,t] / (1 + G[0,:,t]) )
         R[1,:,t+1] = R[1,:,t] + dt/params['tauR'] * ( - R[1,:,t] + C[1,:,t] / (1 + G[1,:,t]) )
         R[R<0] = 0
